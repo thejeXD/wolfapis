@@ -1,0 +1,11 @@
+# Ignore environment files
+.env
+
+# Node modules
+/node_modules
+
+# Logs
+*.log
+
+# Debug files
+npm-debug.log*
