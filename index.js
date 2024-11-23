@@ -41,17 +41,26 @@ app.get("/rank", async (req, res) => {
 
     // Check if the API key is valid
     if (apiKey !== mainApiKey) {
-      return res.status(400).json({ error: "Invalid API Key" });
+      return res.status(400).json({ 
+        error: "Invalid API Key", 
+        message: "The API key provided is not valid." 
+      });
     }
 
     // Ensure userid, rank, and groupid are provided
     if (!userid || !rank || !groupid) {
-      return res.status(400).json({ error: "Missing userid, rank, or groupid parameter" });
+      return res.status(400).json({ 
+        error: "Missing Parameters", 
+        message: "Please ensure all required parameters (userid, rank, and groupid) are provided." 
+      });
     }
 
     // Ensure the groupId exists in config.json valid groups
     if (!config.validGroups[groupid]) {
-      return res.status(400).json({ error: "Unauthorized GROUP ID! Please register your GROUP ID to WOLF." });
+      return res.status(400).json({ 
+        error: "Unauthorized Group", 
+        message: "The provided group ID is not authorized. Please register the group ID with WOLF." 
+      });
     }
 
     if (config.validGroups.hasOwnProperty(groupId)) {
@@ -61,15 +70,20 @@ app.get("/rank", async (req, res) => {
         console.log(`Bot's rank in group ${groupId}: ${botRank}`);
     
         if (botRank === -1) {
-          return res.status(400).json({ error: "Bot is not in the group!" });
+          return res.status(400).json({ 
+            error: "Bot Not In Group", 
+            message: `The bot is not in group ${groupId}. Please ensure the bot is added to the group.` 
+          });
         }
       } catch (error) {
         console.error(`Error fetching bot rank in group ${groupId}:`, error);
-        return res.status(500).json({ error: "Failed to fetch bot's rank" });
+        return res.status(500).json({ 
+          error: "Server Error", 
+          message: "There was an issue while checking the bot's rank in the group." 
+        });
       }
     }
     
-
     // Convert groupid, userid, and rank to integers for further use
     const groupId = parseInt(groupid);
     const userId = parseInt(userid);
@@ -77,15 +91,23 @@ app.get("/rank", async (req, res) => {
 
     // Ensure groupId, userId, and roleId are valid, else return error
     if (isNaN(groupId) || isNaN(userId) || isNaN(roleId)) {
-      return res.status(400).json({ error: "Invalid groupId, userid, or rank" });
+      return res.status(400).json({ 
+        error: "Invalid Input", 
+        message: "Invalid values for groupId, userid, or rank provided. Please check the inputs." 
+      });
     }
 
     // Proceed with ranking the user
     await rbx.setRank(groupId, userId, roleId);
-    res.json({ message: "User successfully ranked!" });
+    res.json({ 
+      message: "User successfully ranked!" 
+    });
   } catch (error) {
     console.error("Error ranking user:", error);
-    res.status(500).json({ error: "Failed to rank user" });
+    res.status(500).json({ 
+      error: "Server Error", 
+      message: "An unexpected error occurred while ranking the user." 
+    });
   }
 });
 
