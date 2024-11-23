@@ -11,12 +11,6 @@
         "src": "/(.*)",
         "dest": "index.js"
       }
-    ],
-    "functions": {
-      "index.js": {
-        "runtime": "nodejs18.x",
-        "regions": ["hnd1"]
-      }
-    }
+    ]
   }
   
