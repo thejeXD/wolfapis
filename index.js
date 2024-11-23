@@ -14,9 +14,20 @@ async function startApp() {
     const currentUser = await rbx.getAuthenticatedUser(); // Fetch the bot's user info
     console.log(`Logged in as ${currentUser.displayName} [${currentUser.id}]`);
 
-    // Get bot's rank in the group (will be used later in the route)
-    const botRole = await rbx.getRankInGroup(groupId);
-    console.log(`Bot's rank in the group: ${botRole}`);
+    // Check if bot is in any of the valid groups
+    for (const groupId in config.validGroups) {
+      if (config.validGroups.hasOwnProperty(groupId)) {
+        const botRank = await rbx.getRankInGroup(groupId, currentUser.id);
+        console.log(`Bot's rank in group ${groupId}: ${botRank}`);
+
+        // Validate if the bot is in the group
+        if (botRank >= 0) {
+          console.log(`Bot is in group ${groupId}`);
+        } else {
+          console.log(`Bot is not in group ${groupId}`);
+        }
+      }
+    }
   } catch (error) {
     console.error("Error logging in:", error);
   }
@@ -42,6 +53,22 @@ app.get("/rank", async (req, res) => {
     if (!config.validGroups[groupid]) {
       return res.status(400).json({ error: "Unauthorized GROUP ID! Please register your GROUP ID to WOLF." });
     }
+
+    if (config.validGroups.hasOwnProperty(groupId)) {
+      try {
+        const botRank = await rbx.getRankInGroup(groupId);
+    
+        console.log(`Bot's rank in group ${groupId}: ${botRank}`);
+    
+        if (botRank === -1) {
+          return res.status(400).json({ error: "Bot is not in the group!" });
+        }
+      } catch (error) {
+        console.error(`Error fetching bot rank in group ${groupId}:`, error);
+        return res.status(500).json({ error: "Failed to fetch bot's rank" });
+      }
+    }
+    
 
     // Convert groupid, userid, and rank to integers for further use
     const groupId = parseInt(groupid);
