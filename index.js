@@ -6,20 +6,20 @@ const config = require("./config.json"); // Group IDs from config.json
 const express = require("express");
 const rbx = require("noblox.js");
 const app = express();
+const getuserid = 0;
 
 // Start the application and log in
 async function startApp() {
   try {
     await rbx.setCookie(cookie);
     const currentUser = await rbx.getAuthenticatedUser(); // Fetch the bot's user info
-    console.log(`Logged in as ${currentUser.displayName} [${currentUser.id}]`);
+    console.log(`Logged in as ${currentUser.displayName} [${currentUser.id}] ${getuserid}`);
 
     // Check if bot is in any of the valid groups
     for (const groupId in config.validGroups) {
       if (config.validGroups.hasOwnProperty(groupId)) {
         const botRank = await rbx.getRankInGroup(groupId, currentUser.id);
         console.log(`Bot's rank in group ${groupId}: ${botRank}`);
-
         // Validate if the bot is in the group
         if (botRank >= 0) {
           console.log(`Bot is in group ${groupId}`);
@@ -38,6 +38,7 @@ startApp();
 app.get("/rank", async (req, res) => {
   try {
     const { userid, rank, groupid, apiKey } = req.query;
+
 
     // Check if the API key is valid
     if (apiKey !== mainApiKey) {
@@ -63,9 +64,11 @@ app.get("/rank", async (req, res) => {
       });
     }
 
+    const currentUser = await rbx.getAuthenticatedUser(); // Fetch the bot's user info
+
     if (config.validGroups.hasOwnProperty(groupid)) {
       try {
-        const botRank = await rbx.getRankInGroup(groupid);
+        const botRank = await rbx.getRankInGroup(groupid, currentUser.id);
     
         console.log(`Bot's rank in group ${groupid}: ${botRank}`);
     
