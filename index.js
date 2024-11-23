@@ -8,8 +8,8 @@ const app = express();
 
 // Define API keys from environment variables
 const apiKeys = {
-  "key1": process.env.API_KEY_1,
-  "key2": process.env.API_KEY_2,
+  "15086800": process.env.API_KEY_1, // Studio
+  "35192007": process.env.API_KEY_2, // Jabi
   "key3": process.env.API_KEY_3
 };
 
