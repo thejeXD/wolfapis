@@ -5,8 +5,6 @@ const express = require("express");
 const rbx = require("noblox.js");
 const app = express();
 
-app.use(express.static("public"));
-
 async function startApp() {
   try {
     await rbx.setCookie(cookie);
@@ -20,7 +18,7 @@ startApp();
 
 app.get("/rank", async (req, res) => {
   try {
-    const { userid, rank } = req.query; 
+    const { userid, rank } = req.query;
 
     if (!userid || !rank) {
       return res.status(400).json({ error: "Missing userid or rank parameter" });
@@ -34,7 +32,5 @@ app.get("/rank", async (req, res) => {
   }
 });
 
-
-const listener = app.listen(process.env.PORT || 3000, () => {
-  console.log("Your app is listening on port " + listener.address().port);
-});
+// Export the app as a function for Vercel
+module.exports = app;
