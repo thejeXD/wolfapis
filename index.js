@@ -4,49 +4,44 @@ const cookie = process.env.ROBLOX_COOKIE;
 
 const express = require("express");
 const rbx = require("noblox.js");
+const config = require("./config.json");  // Assuming your API keys are stored in config.json
 const app = express();
 
-// Define API keys from environment variables
-const apiKeys = {
-  "15086800": process.env.API_KEY_1, // Studio
-  "35192007": process.env.API_KEY_2, // Jabi
-  "key3": process.env.API_KEY_3
-};
-
+// Start the application and log in
 async function startApp() {
   try {
     await rbx.setCookie(cookie);
-    const currentUser = await rbx.getAuthenticatedUser(); // Updated method
+    const currentUser = await rbx.getAuthenticatedUser(); // Fetch the bot's user info
     console.log(`Logged in as ${currentUser.displayName} [${currentUser.id}]`);
+
+    // Get bot's rank in the group (will be used later in the route)
+    const botRole = await rbx.getRankInGroup(groupId);
+    console.log(`Bot's rank in the group: ${botRole}`);
+
   } catch (error) {
     console.error("Error logging in:", error);
   }
 }
+
 startApp();
 
 app.get("/rank", async (req, res) => {
   try {
-    // Get API key from query parameter
-    const apiKey = req.query.apiKey;
+    const { userid, rank, apiKey: providedApiKey } = req.query;
 
-    // Check if the API key is valid
-    if (!apiKeys[apiKey]) {
-      return res.status(401).json({ error: "Invalid API key" });
+    // Check if API key is valid
+    if (!providedApiKey || !config.apiKeys[providedApiKey]) {
+      return res.status(400).json({ error: "Invalid API Key" });
     }
 
-    // Get the group associated with the API key
-    const group = apiKeys[apiKey];
-
-    // Get the userId and rank from query parameters
-    const { userid, rank } = req.query;
-
+    // Ensure userid and rank are provided
     if (!userid || !rank) {
       return res.status(400).json({ error: "Missing userid or rank parameter" });
     }
 
-    // Perform the rank change
+    // Proceed with ranking the user
     await rbx.setRank(groupId, parseInt(userid), parseInt(rank));
-    res.json({ message: `User successfully ranked in group ${group}!` });
+    res.json({ message: "User successfully ranked!" });
   } catch (error) {
     console.error("Error ranking user:", error);
     res.status(500).json({ error: "Failed to rank user" });
