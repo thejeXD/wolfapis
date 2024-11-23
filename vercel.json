@@ -6,16 +6,17 @@
         "use": "@vercel/node"
       }
     ],
-    "functions": {
-      "index.js": {
-        "regions": ["hnd1"]
-      }
-    },
     "routes": [
       {
         "src": "/(.*)",
         "dest": "index.js"
       }
-    ]
+    ],
+    "functions": {
+      "index.js": {
+        "runtime": "nodejs18.x",
+        "regions": ["hnd1"]
+      }
+    }
   }
   
