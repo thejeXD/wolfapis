@@ -1,3 +1,4 @@
+require('dotenv').config();
 const groupId = 15086800;
 const cookie = process.env.ROBLOX_COOKIE;
 
