@@ -1,10 +1,9 @@
 require('dotenv').config();
-const groupId = 15086800;
 const cookie = process.env.ROBLOX_COOKIE;
+const config = require("./config.json");
 
 const express = require("express");
 const rbx = require("noblox.js");
-const config = require("./config.json");  // Assuming your API keys are stored in config.json
 const app = express();
 
 // Start the application and log in
@@ -14,10 +13,6 @@ async function startApp() {
     const currentUser = await rbx.getAuthenticatedUser(); // Fetch the bot's user info
     console.log(`Logged in as ${currentUser.displayName} [${currentUser.id}]`);
 
-    // Get bot's rank in the group (will be used later in the route)
-    const botRole = await rbx.getRankInGroup(groupId);
-    console.log(`Bot's rank in the group: ${botRole}`);
-
   } catch (error) {
     console.error("Error logging in:", error);
   }
@@ -25,18 +20,19 @@ async function startApp() {
 
 startApp();
 
+// The main route to rank a user
 app.get("/rank", async (req, res) => {
   try {
-    const { userid, rank, groupid, apiKey: providedApiKey } = req.query;
+    const { userid, rank, groupid } = req.query;
 
-    // Check if API key is valid
-    if (!providedApiKey || !config.apiKeys[providedApiKey]) {
-      return res.status(400).json({ error: "Invalid API Key" });
+    // Ensure that the groupId is valid
+    if (!groupid || !config.validGroups[groupid]) {
+      return res.status(400).json({ error: "Invalid or missing groupId" });
     }
 
-    // Ensure userid, rank, and groupid are provided
-    if (!userid || !rank || !groupid) {
-      return res.status(400).json({ error: "Missing userid, rank, or groupid parameter" });
+    // Ensure userid and rank are provided
+    if (!userid || !rank) {
+      return res.status(400).json({ error: "Missing userid or rank parameter" });
     }
 
     // Convert groupid, userid, and rank to integers for further use
@@ -44,9 +40,17 @@ app.get("/rank", async (req, res) => {
     const userId = parseInt(userid);
     const roleId = parseInt(rank);
 
-    // Ensure groupId is valid, else return error
+    // Ensure groupId, userId, and roleId are valid
     if (isNaN(groupId) || isNaN(userId) || isNaN(roleId)) {
       return res.status(400).json({ error: "Invalid groupId, userid, or rank" });
+    }
+
+    // Get bot's rank in the requested group
+    const botRole = await rbx.getRankInGroup(groupId);
+
+    // Check if the bot has permission to rank
+    if (botRole < 2) {  // 2 = Moderator, adjust according to your requirements
+      return res.status(403).json({ error: "Bot does not have permission to rank users in this group" });
     }
 
     // Proceed with ranking the user
@@ -58,8 +62,7 @@ app.get("/rank", async (req, res) => {
   }
 });
 
-
-// Export the app as a function for Vercel
+// Export the app for deployment (e.g., Vercel)
 module.exports = app;
 
 // Start the server for local development (optional)
