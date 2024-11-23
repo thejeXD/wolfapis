@@ -55,3 +55,9 @@ app.get("/rank", async (req, res) => {
 
 // Export the app as a function for Vercel
 module.exports = app;
+
+// Start the server for local development (optional)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
