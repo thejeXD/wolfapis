@@ -42,49 +42,25 @@ app.get("/rank", async (req, res) => {
 
     // Check if the API key is valid
     if (apiKey !== mainApiKey) {
-      return res.status(400).json({ 
-        error: "Invalid API Key", 
-        message: "The API key provided is not valid." 
-      });
+      return res.json({ error: "Invalid API Key", message: "The API key provided is not valid." });
     }
 
     // Ensure userid, rank, and groupid are provided
     if (!userid || !rank || !groupid) {
-      return res.status(400).json({ 
-        error: "Missing Parameters", 
-        message: "Please ensure all required parameters (userid, rank, and groupid) are provided." 
-      });
+      return res.json({ error: "Missing Parameters", message: "Missing userid, rank, or groupid parameter" });
     }
 
-    // Ensure the groupId exists in config.json valid groups
+    // Ensure the groupId exists in valid groups
     if (!config.validGroups[groupid]) {
-      return res.status(400).json({ 
-        error: "Unauthorized Group", 
-        message: "The provided group ID is not authorized. Please register the group ID with WOLF." 
-      });
+      return res.json({ error: "Unauthorized Group ID", message: "Please register your Group ID." });
     }
 
-    const currentUser = await rbx.getAuthenticatedUser(); // Fetch the bot's user info
+    const currentUser = await rbx.getAuthenticatedUser();
+    const botRank = await rbx.getRankInGroup(groupid, currentUser.id);
+    console.log(`Bot's rank in group ${groupid}: ${botRank}`);
 
-    if (config.validGroups.hasOwnProperty(groupid)) {
-      try {
-        const botRank = await rbx.getRankInGroup(groupid, currentUser.id);
-    
-        console.log(`Bot's rank in group ${groupid}: ${botRank}`);
-    
-        if (botRank === -1) {
-          return res.status(400).json({ 
-            error: "Bot Not In Group", 
-            message: `The bot is not in group ${groupid}. Please ensure the bot is added to the group.` 
-          });
-        }
-      } catch (error) {
-        console.error(`Error fetching bot rank in group ${groupid}:`, error);
-        return res.status(500).json({ 
-          error: "Server Error", 
-          message: "There was an issue while checking the bot's rank in the group." 
-        });
-      }
+    if (botRank === -1) {
+      return res.json({ error: "Bot Not In Group", message: "The bot is not a member of the group." });
     }
     
     // Convert groupid, userid, and rank to integers for further use
