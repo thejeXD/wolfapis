@@ -33,5 +33,10 @@ app.get("/rank", async (req, res) => {
   }
 });
 
-// Export the app as a function for Vercel
+// Listen on the port provided by the environment or 3000 by default
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Your app is listening on port ${port}`);
+});
+
 module.exports = app;
