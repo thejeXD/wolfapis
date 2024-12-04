@@ -56,11 +56,17 @@ app.get("/rank", async (req, res) => {
     }
 
     const currentUser = await rbx.getAuthenticatedUser();
+    const requestUserRank = await rbx.getRankInGroup(groupId, userid);
+
     const botRank = await rbx.getRankInGroup(groupid, currentUser.id);
     console.log(`Bot's rank in group ${groupid}: ${botRank}`);
 
     if (botRank === -1) {
       return res.json({ error: "Bot Not In Group", message: "The bot is not a member of the group." });
+    }
+
+    if (requestUserRank === -1) {
+      return res.json({ error: "Player Not In Group", message: "The user is not a member of the group." });
     }
     
     // Convert groupid, userid, and rank to integers for further use
