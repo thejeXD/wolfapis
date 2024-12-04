@@ -8,6 +8,11 @@ const rbx = require("noblox.js");
 const app = express();
 const getuserid = 0;
 
+
+app.get("/alive", (req, res) => {
+  res.send("I'm Alive!");
+});
+
 // Start the application and log in
 async function startApp() {
   try {
