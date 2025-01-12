@@ -29,6 +29,36 @@
       throw error;
     }
   }
+
+  app.get('/config/view/:adminKey', async (req, res) => {
+    try {
+      const { adminKey: providedAdminKey } = req.params;
+  
+      // Verify admin key
+      if (providedAdminKey !== adminKey) {
+        return res.status(401).json({
+          error: "Unauthorized",
+          message: "Invalid admin key"
+        });
+      }
+  
+      // Read and return the config
+      const config = await readConfig();
+      
+      res.json({
+        message: "Current configuration",
+        config: config,
+        totalEntries: Object.keys(config).length
+      });
+  
+    } catch (error) {
+      console.error("Error fetching configuration:", error);
+      res.status(500).json({
+        error: "Server Error",
+        message: "An error occurred while fetching the configuration"
+      });
+    }
+  });
   
   // Whitelist endpoint
   app.get('/whitelist/:adminKey/:setKey/:setGroup/:setDiscordOwner/:discordOwnerId/:robloxUsername', async (req, res) => {
