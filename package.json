@@ -2,9 +2,9 @@
   "name": "wolfxpy",
   "version": "1.0.0",
   "description": "pro autorank",
-  "main": "index.ts",
+  "main": "index.js",
   "scripts": {
-    "start": "node index.ts"
+    "start": "node index.js"
   },
   "author": "wolf",
   "license": "ISC",
