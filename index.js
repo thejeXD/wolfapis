@@ -1,10 +1,6 @@
-const express = require('express');
 const axios = require('axios');
 const { createCanvas, loadImage, registerFont } = require('canvas'); // For generating the image
 const fs = require('fs');
-
-const app = express();
-app.use(express.json());
 
 // Register fonts
 registerFont('./fonts/Roboto-Black.ttf', { family: 'Roboto' });
@@ -182,76 +178,45 @@ const uploadToImgur = async (imageBuffer) => {
     }
 };
 
-app.get("/alive", (req, res) => {
-    res.send("I'm Alive!");
-});
+// The Vercel handler function
+module.exports = async (req, res) => {
+    if (req.method === 'GET' && req.url.startsWith('/webhook/dono')) {
+        try {
+            const { webhookId, webhookToken } = req.query; // Extract webhook ID and Token from the query parameters
+            const { donorId, recipientId, amount } = req.query; // Get donation details from the query parameters
 
-app.post('/webhook/post', async (req, res) => {
-    const { webhookUrl, body } = req.body; // Extract webhook URL and data from request body
+            if (!webhookId || !webhookToken || !donorId || !recipientId || !amount) {
+                return res.status(400).send('Missing required parameters.');
+            }
 
-    // Log received data for debugging
-    console.log(`Webhook URL: ${webhookUrl}`);
-    console.log(`Data to send:`, body);
+            // Log the received parameters (for debugging)
+            console.log(`Webhook ID: ${webhookId}`);
+            console.log(`Webhook Token: ${webhookToken}`);
+            console.log(`Donor ID: ${donorId}`);
+            console.log(`Recipient ID: ${recipientId}`);
+            console.log(`Amount: ${amount}`);
 
-    try {
-        // Send the data to the provided webhook URL
-        const response = await axios.post(webhookUrl, body, {
-            headers: { 'Content-Type': 'application/json' }
-        });
+            // Generate the donation image
+            const imgUrl = await generateImage(donorId, recipientId, amount);
 
-        // Respond back with success
-        res.status(200).json({ message: 'Webhook fired successfully', data: response.data });
-    } catch (error) {
-        console.error('Error firing webhook:', error.message);
-        res.status(500).json({ message: 'Failed to fire webhook', error: error.message });
-    }
-});
+            // Send the webhook to Discord
+            const webhookUrl = `https://discord.com/api/webhooks/${webhookId}/${webhookToken}`;
+            await axios.post(webhookUrl, {
+                content: `🎉 **Donation Alert!** 🎉 ${donorId} donated **${amount}** to ${recipientId}!`,
+                embeds: [
+                    {
+                        color: 3066993, // Blue color
+                        image: { url: imgUrl }, // Add the image URL
+                    },
+                ],
+            });
 
-// Webhook route to handle donations and send the message with image to Discord
-app.get('/webhook/dono/:webhookId/:webhookToken', async (req, res) => {
-    try {
-        const { webhookId, webhookToken } = req.params; // Extract webhook ID and Token from the URL parameters
-        const { donorId, recipientId, amount } = req.query; // Get donation details from the query parameters
-
-        if (!webhookId || !webhookToken || !donorId || !recipientId || !amount) {
-            return res.status(400).send('Missing required parameters.');
+            res.status(200).send('Donation webhook sent successfully!');
+        } catch (error) {
+            console.error('Error sending webhook:', error.message);
+            res.status(500).send('Failed to send donation webhook.');
         }
-
-        // Log the received parameters (for debugging)
-        console.log(`Webhook ID: ${webhookId}`);
-        console.log(`Webhook Token: ${webhookToken}`);
-        console.log(`Donor ID: ${donorId}`);
-        console.log(`Recipient ID: ${recipientId}`);
-        console.log(`Amount: ${amount}`);
-
-        // Generate the donation image
-        const imgUrl = await generateImage(donorId, recipientId, amount);
-
-        // Send the webhook to Discord
-        const webhookUrl = `https://discord.com/api/webhooks/${webhookId}/${webhookToken}`;
-        await axios.post(webhookUrl, {
-            content: `🎉 **Donation Alert!** 🎉 ${donorId} donated **${amount}** to ${recipientId}!`,
-            embeds: [
-                {
-                    color: 3066993, // Blue color
-                    image: { url: imgUrl }, // Add the image URL
-                },
-            ],
-        });
-
-        res.status(200).send('Donation webhook sent successfully!');
-    } catch (error) {
-        console.error('Error sending webhook:', error.message);
-        res.status(500).send('Failed to send donation webhook.');
+    } else {
+        res.status(404).send('Not Found');
     }
-});
-
-
-// Export the app for Vercel
-module.exports = app;
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+};
