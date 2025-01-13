@@ -311,7 +311,11 @@ client.once('ready', async () => {
 // Log in the bot
 client.login(process.env.DISCORD_BOT_TOKEN);
 
+app.get('/alive', (req, res) => {
+    res.status(200).send('Bot is alive!');
+});
+
 // Start the Express server to handle webhooks
 app.listen(3000, () => {
-    console.log("Webhook server is running on http://localhost:3000");
+    console.log("Webhook server is running on 3000");
 });
