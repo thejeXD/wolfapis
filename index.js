@@ -162,25 +162,36 @@ const generateImage = async (donorId, recipientId, amount) => {
 };
 
 // Function to upload image to Imgur
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const uploadToImgur = async (imageBuffer) => {
-    try {
-        const formData = new FormData();
-        formData.append('image', imageBuffer.toString('base64')); // Convert the image buffer to base64
+    const retryLimit = 5;
+    for (let attempt = 1; attempt <= retryLimit; attempt++) {
+        try {
+            const formData = new FormData();
+            formData.append('image', imageBuffer.toString('base64')); // Convert the image buffer to base64
 
-        const response = await axios.post('https://api.imgur.com/3/image', formData, {
-            headers: {
-                'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`, // Include the Client-ID for authorization
-                'Content-Type': 'multipart/form-data'
+            const response = await axios.post('https://api.imgur.com/3/image', formData, {
+                headers: {
+                    'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            return response.data.data.link; // Return the image URL
+        } catch (error) {
+            if (error.response && error.response.status === 429 && attempt < retryLimit) {
+                // Wait for a short delay before retrying
+                console.log(`Rate limit hit, retrying in 30 seconds... (Attempt ${attempt}/${retryLimit})`);
+                await sleep(30000); // Sleep for 30 seconds
+            } else {
+                console.error('Error uploading to Imgur:', error.message);
+                throw new Error('Failed to upload image to Imgur.');
             }
-        });
-
-        // Return the URL of the uploaded image
-        return response.data.data.link;
-    } catch (error) {
-        console.error('Error uploading to Imgur:', error.message);
-        throw new Error('Failed to upload image to Imgur.');
+        }
     }
 };
+
 
 app.get("/alive", (req, res) => {
     res.send("I'm Alive!");
