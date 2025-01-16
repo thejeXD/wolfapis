@@ -315,9 +315,16 @@ async function loadCommands() {
 
     // Register global commands
     try {
-        console.log(`Registering ${commands.length} global commands...`);
-        await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
-        console.log('Successfully registered global commands.');
+        console.log(`Started refreshing ${commands.length} application (/) commands.`);
+        //await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
+
+        const data = await rest.put(
+			Routes.applicationCommands(process.env.CLIENT_ID),
+			{ body: commands },
+		);  
+
+
+        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
     } catch (error) {
         console.error('Error registering global commands:', error);
     }
