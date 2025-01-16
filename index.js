@@ -176,6 +176,42 @@ const generateImage = async (donorId, recipientId, amount) => {
     }
 };
 
+app.post('/webhook/post', async (req, res) => {
+    const { webhookUrl, body } = req.body; // Extract webhook URL and data from the request body
+
+    // Log received data for debugging
+    console.log(`Webhook URL: ${webhookUrl}`);
+    console.log('Data to send:', body);
+
+    if (!webhookUrl || !body) {
+        return res.status(400).json({ message: 'Missing webhookUrl or body in the request.' });
+    }
+
+    try {
+        // Send the data to the provided webhook URL
+        const response = await axios.post(webhookUrl, body, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        // Respond back with success
+        res.status(200).json({
+            message: 'Webhook fired successfully',
+            data: response.data,
+            status: response.status,
+        });
+    } catch (error) {
+        console.error('Error firing webhook:', error.message);
+
+        // Respond with error details
+        res.status(500).json({
+            message: 'Failed to fire webhook',
+            error: error.message,
+            status: error.response?.status || 500,
+            details: error.response?.data || null,
+        });
+    }
+});
+
 // Webhook route for donation and other data
 app.get('/webhook/dono/:webhookId/:webhookToken', async (req, res) => {
     try {
@@ -277,15 +313,27 @@ async function loadCommands() {
         }
     }
 
-    // Register commands with Discord
+    // Register global commands
     try {
-        console.log(`Registering ${commands.length} commands...`);
+        console.log(`Registering ${commands.length} global commands...`);
         await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
-        console.log('Successfully registered commands.');
+        console.log('Successfully registered global commands.');
     } catch (error) {
-        console.error('Error registering commands:', error);
+        console.error('Error registering global commands:', error);
     }
+
+    // Uncomment below to register guild-specific commands (for reuse later)
+    /*
+    try {
+        console.log(`Registering ${commands.length} guild-specific commands...`);
+        await rest.put(Routes.applicationGuildCommands(client.user.id, 'YOUR_GUILD_ID'), { body: commands });
+        console.log('Successfully registered guild-specific commands.');
+    } catch (error) {
+        console.error('Error registering guild-specific commands:', error);
+    }
+    */
 }
+
 
 // Interaction handler for slash commands
 client.on('interactionCreate', async (interaction) => {

@@ -2,7 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('robux')
+        .setName('robux-calculator')
         .setDescription('Calculate Robux after tax and how much to cover the tax.')
         .addNumberOption(option => 
             option.setName('amount')
@@ -20,15 +20,18 @@ module.exports = {
 
         // Create an embed for the response
         const embed = new EmbedBuilder()
-            .setColor(0x0099FF)
+            .setColor(16752790)
             .setTitle('Robux Tax Calculator')
-            .setDescription('Here is the breakdown of your Robux calculation:')
+            .setDescription('Tax calculated at 30% deduction.')
             .addFields(
                 { name: 'Original Amount', value: `${amount} Robux`, inline: true },
                 { name: 'After Tax (30% deducted)', value: `${afterTax.toFixed(2)} Robux`, inline: true },
                 { name: 'To Cover Tax (Before Tax)', value: `${coverTax.toFixed(2)} Robux`, inline: true }
             )
-            .setFooter({ text: 'Tax calculated at 30% deduction.' });
+            .setFooter({
+                text: `Requested by ${requestedBy} | Time: ${currentTime}`,
+                iconURL: requestedByAvatar // User's avatar in the footer
+            });
 
         // Reply directly to the interaction
         await interaction.reply({ embeds: [embed] });
