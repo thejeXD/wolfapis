@@ -18,6 +18,11 @@ module.exports = {
         const afterTax = amount * 0.7; // Robux you get after the tax
         const coverTax = amount / 0.7 + 1; // Amount needed to cover the tax
 
+        // Get the user who requested the command and other values
+        const requestedBy = interaction.user.tag;
+        const requestedByAvatar = interaction.user.displayAvatarURL();
+        const currentTime = new Date().toLocaleString();
+
         // Create an embed for the response
         const embed = new EmbedBuilder()
             .setColor(16752790)

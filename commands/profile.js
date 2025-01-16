@@ -20,7 +20,7 @@ module.exports = {
 
         // Check if the user is on cooldown
         const now = Date.now();
-        const cooldownAmount = 5000; // 5 seconds in milliseconds
+        const cooldownAmount = 30000; // 5 seconds in milliseconds
 
         if (cooldowns.has(userId)) {
             const expirationTime = cooldowns.get(userId) + cooldownAmount;
@@ -35,7 +35,6 @@ module.exports = {
         }
 
         try {
-            
             // Fetch user information
             const userInfoResponse = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
             const userInfo = userInfoResponse.data;
@@ -56,6 +55,11 @@ module.exports = {
             const accountAgeInDays = Math.floor(accountAgeInMilliseconds / (1000 * 60 * 60 * 24)); // Calculate days
             const accountAgeInYears = Math.floor(accountAgeInDays / 365); // Calculate years
         
+            // Get the user who requested the command and other values
+            const requestedBy = interaction.user.tag;
+            const requestedByAvatar = interaction.user.displayAvatarURL();
+            const currentTime = new Date().toLocaleString();
+
             // Create an embed for the response
             const embed = new EmbedBuilder()
                 .setColor(16752790)
@@ -79,14 +83,23 @@ module.exports = {
         
             // Reply directly to the interaction
             await interaction.reply({ embeds: [embed] });
-        
+
             // Set the user's cooldown timestamp
             cooldowns.set(userId, now);
             setTimeout(() => cooldowns.delete(userId), cooldownAmount); // Remove the cooldown after 5 seconds
         } catch (error) {
             console.error('Error fetching user information:', error);
+
+            if (error.response && error.response.status === 429) {
+                // Rate limited error
+                const retryAfter = error.response.headers['retry-after'] || 30; // Retry after time in seconds
+                return interaction.reply({
+                    content: `You are being rate-limited. Please wait ${retryAfter} seconds before trying again.`,
+                    ephemeral: true
+                });
+            }
+
             await interaction.reply('Could not retrieve user information. Please try again later.');
         }
-        
     },
 };

@@ -323,22 +323,19 @@ async function loadCommands() {
 			{ body: commands },
 		);  
 
-
         console.log(`Successfully reloaded ${data.length} application (/) commands.`);
     } catch (error) {
         console.error('Error registering global commands:', error);
     }
 
-    // Uncomment below to register guild-specific commands (for reuse later)
-    /*
-    try {
-        console.log(`Registering ${commands.length} guild-specific commands...`);
-        await rest.put(Routes.applicationGuildCommands(client.user.id, 'YOUR_GUILD_ID'), { body: commands });
-        console.log('Successfully registered guild-specific commands.');
-    } catch (error) {
-        console.error('Error registering guild-specific commands:', error);
-    }
-    */
+    // try {
+    //     console.log(`Registering ${commands.length} guild-specific commands...`);
+    //     await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: commands });
+    //     console.log('Successfully registered guild-specific commands.');
+    // } catch (error) {
+    //     console.error('Error registering guild-specific commands:', error);
+    // }
+
 }
 
 

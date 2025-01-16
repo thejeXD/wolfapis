@@ -23,6 +23,7 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setColor(16752790)
             .setTitle('MNEM - For your ROBLOX needs.')
+            .setDescription(`Meet MNEM, your all-in-one Roblox companion! 🚀 Whether you're tracking user stats, exploring new profiles, or interacting with the community, MNEM makes your experience smoother and more fun. Fast, reliable, and packed with useful features, this bot is designed to make your gaming journey easier, one command at a time. Join the fun, and let MNEM level up your server!`)
             .setThumbnail(bot.user.displayAvatarURL())  // Bot's profile as the thumbnail
             .addFields(
                 { name: 'Creator', value: "[@greywolfxd](https://discord.gg/ne9ycr8van)" },
