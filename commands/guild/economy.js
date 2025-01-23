@@ -4,6 +4,40 @@ const Economy = require('../../models/economy');
 // Cooldown map to track user cooldowns for each subcommand
 const cooldowns = new Map();
 
+
+const workScenarios = [
+    { 
+        description: "You worked as a freelance programmer, solving complex coding challenges.",
+        minEarnings: 100,
+        maxEarnings: 600,
+        successMessages: [
+            "Your innovative solution impressed the client!",
+            "The project was a great success!",
+            "Your coding skills paid off big time!"
+        ]
+    },
+    { 
+        description: "You took a gig as a virtual assistant, managing emails and schedules.",
+        minEarnings: 50,
+        maxEarnings: 400,
+        successMessages: [
+            "The client was thrilled with your efficiency!",
+            "Your organizational skills were top-notch!",
+            "You managed multiple tasks seamlessly!"
+        ]
+    },
+    { 
+        description: "You designed graphics for a small business marketing campaign.",
+        minEarnings: 75,
+        maxEarnings: 500,
+        successMessages: [
+            "The client loved your creative designs!",
+            "Your graphics captured the brand's essence!",
+            "Marketing team was impressed by your work!"
+        ]
+    }
+];
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('economy')
@@ -77,17 +111,26 @@ module.exports = {
 
         // Handle the 'work' subcommand
         if (subcommand === 'work') {
-            const earnedCash = Math.floor(Math.random() * (500 - 50 + 1)) + 50;
-            playerProfile.cash += earnedCash;
+            // Randomly select a work scenario
+            const scenario = workScenarios[Math.floor(Math.random() * workScenarios.length)];
+            
+            // Calculate earnings within the scenario's range
+            const earnedCash = Math.floor(Math.random() * 
+                (scenario.maxEarnings - scenario.minEarnings + 1)) + scenario.minEarnings;
+            
+            // Select a random success message
+            const successMessage = scenario.successMessages[
+                Math.floor(Math.random() * scenario.successMessages.length)
+            ];
 
+            playerProfile.cash += earnedCash;
             await playerProfile.save();
 
             // Set cooldown for the work subcommand
             cooldowns.set(cooldownKey, { timestamp: now });
 
             return interaction.reply({
-                content: `💼 You worked hard and earned **${earnedCash} cash**.`,
-                ephemeral: true
+                content: `💼 ${scenario.description} and you earned **${earnedCash} cash**. ${successMessage}`,
             });
         }
 

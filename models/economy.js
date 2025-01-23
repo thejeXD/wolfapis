@@ -6,7 +6,8 @@ const economySchema = new mongoose.Schema({
     bank: { type: Number, default: 0 },
     storeCredits: { type: Number, default: 0 },
     purchasedItems: { type: [String], default: [] }, // Tracks purchased items
-    validatedProducts: { type: [String], default: [] } // Tracks validated products
+    validatedProducts: { type: [String], default: [] }, // Tracks validated products
+    redeemedCodes: { type: [String], default: [] } // Tracks redeemed promo codes
 });
 
 // Check if the model already exists before creating it

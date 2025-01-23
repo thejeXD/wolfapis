@@ -3,29 +3,7 @@ const Economy = require('../../models/economy'); // Path to your economy schema
 const LicenseKey = require('../../models/licensekey'); // Path to your license key model
 const emoji = require('../../models/emoji');
 const color = require('../../models/colors');
-
-
-// List of predefined products
-const predefinedProducts = [
-    { name: 'Vehicle Spawner X', id: '1', price: 550 }, 
-    { name: 'Moderator Call', id: '2', price: 275 }, 
-    { name: 'Lock System V2', id: '3', price: 525 }, 
-    { name: 'Support Service', id: '4', price: 525 }, 
-    { name: 'Duty Log', id: '5', price: 425 }, 
-    { name: 'Death GUI', id: '6', price: 120 }, // Requires 2 validation items
-    { name: 'Advanced Team Changer', id: '7', price: 255 }, 
-    { name: 'Training Chat Panel', id: '8', price: 225 }, 
-    { name: 'Loading Screen', id: '9', price: 50 }, // Validation item
-    { name: 'ZMenu', id: '10', price: 1400 }, 
-    { name: 'Notification System', id: '11', price: 255 }, 
-    { name: 'Shop GUI BF: Theme', id: '12', price: 50 }, // Validation item
-    { name: 'Zone GUI', id: '13', price: 70 }, // Validation item
-    { name: 'Military GUI', id: '14', price: 900 }, 
-    { name: 'Announcement GUI', id: '15', price: 650 }, 
-    { name: 'Level System', id: '16', price: 325 }, 
-    { name: 'Kick System', id: '17', price: 70 } // Validation item
-];
-
+const Product = require('../../models/products'); // Path to your product model
 
 
 module.exports = {
@@ -38,9 +16,9 @@ module.exports = {
                 .setDescription('The product for which the license is being validated')
                 .setRequired(true)
                 .addChoices(
-                    predefinedProducts.map(product => ({
-                        name: product.name,
-                        value: product.name // Set the product name as the value
+                    ...Product.map(item => ({
+                        name: item.name,
+                        value: item.name
                     }))
                 )
         )
@@ -58,8 +36,8 @@ module.exports = {
             return interaction.reply({ content: `${emoji.warns} You do not have the required role to use this command.`, ephemeral: true });
         }
 
-        // Check if the product is valid
-        const product = predefinedProducts.find(p => p.name === productName);
+        // Fetch product from the product module
+        const product = Product.find(item => item.name === productName);
         if (!product) {
             return interaction.reply({ content: `${emoji.warns} Invalid product name. Please choose a valid product.`, ephemeral: true });
         }
@@ -69,7 +47,12 @@ module.exports = {
         if (existingLicenseKey) {
             return interaction.reply({ content: `${emoji.warns} This license key is already in use.`, ephemeral: true });
         }
-        
+
+        const verifyKey = licenseKey.length;
+        if (verifyKey < 10) {
+            return interaction.reply({ content: `${emoji.warns} License Key invalid! Too short to validate`, ephemeral: true });
+        }
+ 
         // Check if the player has already validated this product with the given license key
         const existingProduct = await LicenseKey.findOne({ userId: player.id, product: product.name });
         if (existingProduct) {
@@ -93,7 +76,8 @@ module.exports = {
         }
 
         // Validate and store the license key
-        playerProfile.storeCredits += product.price; // Add credits
+        const creditBack = product.price * 0.3;
+        playerProfile.storeCredits += creditBack; // Add credits
         playerProfile.validatedProducts.push(product.name); // Add product to validatedProducts (no duplicates)
 
         // Create a new license key record
@@ -133,7 +117,7 @@ module.exports = {
             .addFields(
                 { name: `${emoji.member3} Player`, value: `<@${player.id}> | ${player.id}` },
                 { name: `${emoji.key} Product`, value: product.name },
-                { name: `${emoji.cart} Store Credits Awarded`, value: `${product.price} credits` }
+                { name: `${emoji.cart} Store Credits Awarded`, value: `${creditBack} credits` }
             )
             .setFooter({ text: `Validated by ${user.username}` })
             .setTimestamp();

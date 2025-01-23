@@ -31,20 +31,20 @@ module.exports = {
                     content: `Please wait ${timeLeft.toFixed(1)} seconds before using this command again.`,
                     ephemeral: true
                 });
+                }
             }
-        }
 
         try {
             // Fetch user information
-            const userInfoResponse = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+            const userInfoResponse = await axios.get(`https://proxyapi-beta.vercel.app/users/v1/users/${userId}`);
             const userInfo = userInfoResponse.data;
         
             // Fetch the user's avatar image
-            const avatarResponse = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=720x720&format=Png&isCircular=false`);
+            const avatarResponse = await axios.get(`https://proxyapi-beta.vercel.app/thumbnails/v1/users/avatar-headshot?userIds=${userId}&size=720x720&format=Png&isCircular=false`);
             const avatarData = avatarResponse.data.data[0];
         
             const avatarUrl = avatarData ? avatarData.imageUrl : 'https://www.roblox.com/favicon.ico'; // Fallback if no avatar found
-            const followerCount = await axios.get(`https://friends.roblox.com/v1/users/${userId}/followers/count`);
+            const followerCount = await axios.get(`https://proxyapi-beta.vercel.app/friends/v1/users/${userId}/followers/count`);
         
             // Corrected line to access follower count
             const isEligibleVerifiedBadge = followerCount.data.count >= 10000;
